@@ -1,3 +1,5 @@
+#if !defined _VISIBLELAYER_H
+#define _VISIBLELAYER 1
 template <typename T>
 class visibleLayer{
   int numNodes;
@@ -22,3 +24,4 @@ public:
     return ans;
   }  
 }; 
+#endif

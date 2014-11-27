@@ -1,3 +1,5 @@
+#if !defined _NODE_H
+#define _NODE_H 1 
 #include "function.h"
 template <typename R, typename T>
 class node{
@@ -24,3 +26,4 @@ class node{
     return transferFunction->invoke(temp);
   }
 };
+#endif

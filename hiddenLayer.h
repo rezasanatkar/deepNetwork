@@ -1,3 +1,5 @@
+#if !defined _HIDDENLAYER_H 
+#define _HIDDENLAYER_H 1
 #include "node.h"
 
 template <typename R, typename T>
@@ -32,3 +34,4 @@ template <typename R, typename T>
     return ans;
   }
 };
+#endif
