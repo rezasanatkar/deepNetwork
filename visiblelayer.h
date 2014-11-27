@@ -6,7 +6,7 @@ public:
   visibleLayer(int _numNodes): numNodes(_numNodes){
     nodes = new T[numNodes];
   }
-  virtual void setNodes(T * input){
+  void setInputs(const T * input){
     for(int i = 0; i < numNodes; i++){
       nodes[i] = input[i];
     }
@@ -14,7 +14,11 @@ public:
   virtual ~visibleLayer(){
     delete[] nodes;
   }
-  virtual const T * getNodes(){
-    return nodes;
+  const T * computeOutputs(){
+    T * ans = new T[numNodes];
+    for(int i = 0; i < numNodes; i++){
+      ans[i] = nodes[i];
+    }
+    return ans;
   }  
 }; 
