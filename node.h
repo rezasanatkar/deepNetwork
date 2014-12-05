@@ -6,7 +6,7 @@ class node{
 	int numInputs;						// number of adjacent nodes from previous layer
 	T * weights;						// weights of corresponding adjacent nodes from previous layer
 	T activation;						// activation of the nodes
-	function<T, T> * transferFunction;	// transfer function between activation and output
+	function<R, T> * transferFunction;	// transfer function between activation and output
 public:
 	// Constructor
 	node(int _numInputs, function<R, T> * _transferFunction) : numInputs(_numInputs), transferFunction(_transferFunction){
@@ -35,7 +35,7 @@ public:
 	T getActivation(){ 
 		return activation;  
 	}
-private:
+
 	// Compute the activation given input
 	T computeActivation(T * inputs){
 		T temp = 0;
