@@ -8,6 +8,18 @@ public:
 	}
 };
 
+template <typename T>
+bool isNumber(T arg)
+{
+	return arg == arg;
+}
+
+template <typename T>
+bool isInf(T arg)
+{
+	return (arg == 2 * arg) && (arg != 0);
+}
+
 template <typename R, typename T>
 class neuralNetwork{
 	int numInputs;						// number of input values, i.e. dimension of x
@@ -112,7 +124,7 @@ public:
 		T J = 0;
 		for (int i = 0; i < numNodesPerLayers[numLayers - 1]; i++)
 		{
-			T t = 2 * (T)(label == i) - 1;
+			T t = 2 * (T)(label - 1 == i) - 1;
 			J += (temp[i] - t) *(temp[i] - t);
 		}
 		delete[] temp;
@@ -123,28 +135,17 @@ private:
 	void computeActivations(T * inputs){
 		// temp1 store outputs for each layer
 		T * temp1 = hiddenLayers[0]->computeOutputs(inputs);
-		//printf("output of 1 layer:\n");
-		//for (int j = 0; j < numNodesPerLayers[0]; j++)
-		//	printf("%.4f ", temp1[j]);
-		//printf("\n");
-
 		// temp2 store activation for each layer
 		T * temp2 = hiddenLayers[0]->getActivations();
-		for (int j = 0; j < numInputs; j++)
+
+		for (int j = 0; j < numNodesPerLayers[0]; j++)
 			activations[0][j] = temp2[j];
-		//printf("activation of 1 layer:\n");
-		//for (int j = 0; j < numNodesPerLayers[0]; j++)
-		//	printf("%.4f ", temp2[j]);
-		//printf("\n");
+
 		delete[] temp2;
 
 		for (int l = 1; l < numLayers; l++){
 			// compute output of the layer
 			temp2 = hiddenLayers[l]->computeOutputs(temp1);
-			//printf("output of %d layer:\n",l+1);
-			//for (int j = 0; j < numNodesPerLayers[l]; j++)
-			//	printf("%.4f ", temp2[j]);
-			//printf("\n");
 
 			delete[] temp1;
 			temp1 = temp2;
@@ -154,11 +155,6 @@ private:
 			for (int j = 0; j < numNodesPerLayers[l]; j++)
 				activations[l][j] = temp2[j];
 			delete[] temp2;
-
-			//printf("activation of %d layer:\n", l + 1);
-			//for (int j = 0; j < numNodesPerLayers[l]; j++)
-			//	printf("%.4f ", activations[l][j]);
-			//printf("\n");
 		}
 	}
 
@@ -167,20 +163,13 @@ private:
 		for (int l = numLayers - 1; l >= 0; l--)
 		for (int i = 0; i < numNodesPerLayers[l]; i++)
 		if (l == numLayers - 1)
-			delta[l][i] = 2 * (activations[l][i] - (2 * (T)(label == i) - 1));
+			delta[l][i] = 2 * (activations[l][i] - (2 * (T)(label - 1 == i) - 1));
 		else{
 			delta[l][i] = 0;
 			for (int j = 0; j < numNodesPerLayers[l + 1]; j++)
 				delta[l][i] += weights[l + 1][j][i] * delta[l + 1][j];
 			delta[l][i] *= derivative->invoke(activations[l][i]);
 		}
-
-		//printf("delta:\n");
-		//for (int l = numLayers - 1; l >= 0; l--){
-		//	for (int i = 0; i < numNodesPerLayers[l]; i++)
-		//		printf("%.4f ", delta[l][i]);
-		//	printf("\n");
-		//}
 	}
 
 	// Update weights
@@ -189,25 +178,11 @@ private:
 		for (int j = 0; j < numNodesPerLayers[l]; j++){
 			if (l == 0)
 			for (int i = 0; i < numInputs; i++)
-				tempWeights[l][j][i] -= epsilon * delta[l][i] * inputs[j];
+				tempWeights[0][j][i] -= epsilon * delta[0][j] * inputs[i];
 			else
 			for (int i = 0; i < numNodesPerLayers[l - 1]; i++)
 				tempWeights[l][j][i] -= epsilon * delta[l][j] * transferFunction->invoke(activations[l - 1][i]);
 		}
-
-		//printf("new weights:\n");
-		//for (int l = 0; l < numLayers; l++){
-		//	for (int j = 0; j < numNodesPerLayers[l]; j++){
-		//		if (l == 0)
-		//		for (int i = 0; i < numInputs; i++)
-		//			printf("%.4f ", tempWeights[l][j][i]);
-		//		else
-		//		for (int i = 0; i < numNodesPerLayers[l - 1]; i++)
-		//			printf("%.4f ", tempWeights[l][j][i]);
-		//		printf("\n");
-		//	}
-		//	printf("\n");
-		//}
 
 		for (int i = 0; i < numLayers; i++)
 			hiddenLayers[i]->setWeights(tempWeights[i]);
