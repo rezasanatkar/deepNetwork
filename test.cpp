@@ -25,66 +25,28 @@ public:
 int myrandom(int i) { return std::rand() % i; }
 
 int main(int argc, char ** argv){
-	//printf("This is a test program to verify the correctness the methods implemented in the other files\n");
-
-	//int numInput = 10;
-	//int numLayers = 3;
-	//int numNodesPerLayers[3] = {9, 5, 7};
-	//neuralNetwork<double, double> nl(numInput, numLayers, numNodesPerLayers, new tanhFunction, new tanhFunctionD);
-	//double * inputs = new double[numInput];
-	//for (int i = 0; i < numInput; i++)
-	//	inputs[i] = 5.0 / (3 + i);
-
-	//double *** weights;
-	//weights = new double **[numLayers];
-	//for (int i = 0; i < numLayers; i++)
-	//	weights[i] = new double*[numNodesPerLayers[i]];
-
-	//for (int i = 0; i < numLayers; i++)
-	//for (int j = 0; j < numNodesPerLayers[i]; j++)
-	//	weights[i][j] = new double[(i == 0 ? numInput : numNodesPerLayers[i - 1])];
-
-	//for (int i = 0; i < numLayers; i++)
-	//for (int j = 0; j < numNodesPerLayers[i]; j++)
-	//for (int k = 0; k < (i == 0 ? numInput : numNodesPerLayers[i - 1]); k++)
-	//	weights[i][j][k] = 1.0 / (i + j + k + 1);	
-
-	//nl.setWeights((double ***)weights);
-	//double * ans = nl.feedForward(inputs);
-	//for (int i = 0; i < numNodesPerLayers[2]; i++)
-	//	printf("%.4f ", ans[i]);
-	//printf("\n");
-	//delete[] ans;
-	//
-	//for (int t = 0; t < 100; t++){
-	//	printf("\n%d-th iteration:\n", t + 1);
-	//	nl.backPropagation(inputs, 3, 0.01);
-	//	ans = nl.feedForward(inputs);
-	//	printf("\nnew output:\n");
-	//	for (int i = 0; i < numNodesPerLayers[2]; i++)
-	//		printf("%.4f ", ans[i]);
-	//	printf("\n");
-	//	printf("J = %.4f\n", nl.computeMSE(inputs, 3));
-	//	delete[] ans;
-	//}
-
+	// set random number seed
 	std::srand(unsigned(std::time(0)));
 
+	// read image and labels
 	vector<vector<double>> image;
 	vector<int> label;
 	printf("read files\n");
 	read_image("train-images.idx3-ubyte", image);
 	read_label("train-labels.idx1-ubyte", label);
 
-	int maxIter = 30;
+	// set iteration number and learning rate
+	int maxIter = 100;
 	double step = 0.02;
 
+	// construct the network
 	printf("construct neuron network\n");
 	int numInput = image[0].size();
 	int numLayers = 2;
 	int numNodesPerLayers[2] = { 300, 10 };
 	neuralNetwork<double, double> nl(numInput, numLayers, numNodesPerLayers, new tanhFunction, new tanhFunctionD);
 	
+	// initialize weight with random numbers
 	double *** weights;
 	weights = new double **[numLayers];
 	for (int i = 0; i < numLayers; i++)
@@ -101,12 +63,19 @@ int main(int argc, char ** argv){
 
 	nl.setWeights((double ***)weights);
 
-	int numImage = (int)image.size() / 6;
-	double * inputs = new double[numInput];
-	double * outputs;
+	// construct permutation array
+	int numImage = (int)image.size();
 	vector<int> perm;
 	for (int i = 0; i < numImage; i++)
 		perm.push_back(i);
+
+	// assign inputs from images
+	double ** inputs = new double*[numImage];
+	for (int i = 0; i < numImage; i++){
+		inputs[i] = new double[image[i].size()];
+		for (int j = 0; j < (int)image[i].size(); j++)
+			inputs[i][j] = image[i][j] / 255;
+	}
 
 	for (int t = 1; t <= maxIter; t++){
 		double err = 0;
@@ -117,28 +86,14 @@ int main(int argc, char ** argv){
 		for (int n = 0; n < numImage; n++){
 			if (n % (numImage / 20) == 0)
 				printf(">");
-			for (int i = 0; i < numInput; i++)
-				inputs[i] = image[perm[n]][i] / 255;
-			nl.backPropagation(inputs, label[perm[n]], step);
+			nl.backPropagation(inputs[perm[n]], label[perm[n]], step);
 		}
-
-		//for (int n = 0; n < (int)image.size(); n++)
-		//	err += nl.computeMSE(inputs, label[perm[n]]);
-		//printf("total error is %.4f\n", err);
 
 		// count correct predictions
 		int count = 0;
 		for (int n = 0; n < numImage; n++){
-			for (int i = 0; i < numInput; i++)
-				inputs[i] = image[perm[n]][i] / 255;
 			// do prediction with updated weights
-			outputs = nl.feedForward(inputs);
-			
-			//printf("\nnew output for label %d:\n", label[perm[n]]);
-			//for (int i = 0; i < numNodesPerLayers[1]; i++)
-			//	printf("%.4f ", outputs[i]);
-			//printf("\n");
-
+			double * outputs = nl.feedForward(inputs[n]);
 			// find most probable label
 			int maxIndex = 0;
 			double max = outputs[0];
@@ -149,31 +104,46 @@ int main(int argc, char ** argv){
 					maxIndex = i;
 				}
 			}
+			// compute accumulate error
 			for (int i = 1; i < numNodesPerLayers[numLayers - 1]; i++){
 				double ti = 2 * (double)(label[n] == maxIndex) - 1;
 				err += (outputs[i] - ti) *(outputs[i] - ti);
 			}
+			delete[] outputs;
 			// if prediction matches true label increment count by 1
-			if (label[perm[n]] == maxIndex)
+			if (label[n] == maxIndex)
 				count++;
 		}
 		printf("\ttotal error is %.4f\n", err);
-		printf("%d predictions are coorect\n", count);
+		printf("%d predictions are coorect, correct rate %.4f\n", count, (double)count / numImage);
 	}
 
+	// release memories
 	for (int i = 0; i < (int)image.size(); i++)
 		vector<double > ().swap(image[i]);
 	vector<vector<double>>().swap(image);
 	vector<int>().swap(label);
+
+	for (int i = 0; i < numImage; i++)
+		delete[] inputs[i];
+	delete[] inputs;
+
+	// read test data
 	read_image("t10k-images.idx3-ubyte", image);
 	read_label("t10k-labels.idx1-ubyte", label);
+
+	// assign inputs from images
+	inputs = new double*[image.size()];
+	for (int i = 0; i < (int)image.size(); i++){
+		inputs[i] = new double[image[i].size()];
+		for (int j = 0; j < (int)image[i].size(); j++)
+			inputs[i][j] = image[i][j] / 255;
+	}
+
 	int count = 0;
 	for (int n = 0; n < (int)image.size(); n++){
-		for (int i = 0; i < numInput; i++)
-			inputs[i] = image[n][i] / 255;
 		// do prediction
-		outputs = nl.feedForward(inputs);
-
+		double * outputs = nl.feedForward(inputs[n]);
 		// find most probable label
 		int maxIndex = 0;
 		double max = outputs[0];
@@ -184,13 +154,43 @@ int main(int argc, char ** argv){
 				maxIndex = i;
 			}
 		}
+		delete[] outputs;
 		// if prediction matches true label increment count by 1
 		if (label[n] == maxIndex)
 			count++;
 	}
 	printf("%d predictions are coorect\n", count);
 
+	// release memories
+	for (int i = 0; i < (int)image.size(); i++)
+		vector<double >().swap(image[i]);
+	vector<vector<double>>().swap(image);
+	vector<int>().swap(label);
+
+	for (int i = 0; i < numImage; i++)
+		delete[] inputs[i];
 	delete[] inputs;
+
+	// store weights in file
+	ofstream file;
+	file.open("weight1.csv", ios::trunc);
+	for (int i = 0; i < numNodesPerLayers[0]; i++)
+	{
+		for (int j = 0; j < numInput; j++)
+			cout << weights[0][i][j];
+		cout << endl;
+	}
+	file.close();
+	file.open("weight2.csv");
+	for (int i = 0; i < numNodesPerLayers[1]; i++)
+	{
+		for (int j = 0; j < numNodesPerLayers[0]; j++)
+			file << weights[0][i][j] << ",";
+		file << endl;
+	}
+	file.close();
+
+	// releease memory for weights
 	for (int i = 0; i < numLayers; i++)
 	for (int j = 0; j < numNodesPerLayers[i]; j++)
 		delete[] weights[i][j];
