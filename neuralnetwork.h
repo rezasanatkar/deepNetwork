@@ -124,7 +124,7 @@ public:
 		T J = 0;
 		for (int i = 0; i < numNodesPerLayers[numLayers - 1]; i++)
 		{
-			T t = 2 * (T)(label - 1 == i) - 1;
+			T t = 2 * (T)(label == i) - 1;
 			J += (temp[i] - t) *(temp[i] - t);
 		}
 		delete[] temp;
@@ -156,6 +156,7 @@ private:
 				activations[l][j] = temp2[j];
 			delete[] temp2;
 		}
+		delete[] temp1;
 	}
 
 	// Compute delta's
@@ -163,7 +164,7 @@ private:
 		for (int l = numLayers - 1; l >= 0; l--)
 		for (int i = 0; i < numNodesPerLayers[l]; i++)
 		if (l == numLayers - 1)
-			delta[l][i] = 2 * (activations[l][i] - (2 * (T)(label - 1 == i) - 1));
+			delta[l][i] = 2 * (activations[l][i] - (2 * (T)(label == i) - 1));
 		else{
 			delta[l][i] = 0;
 			for (int j = 0; j < numNodesPerLayers[l + 1]; j++)

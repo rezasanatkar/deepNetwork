@@ -73,10 +73,10 @@ int main(int argc, char ** argv){
 	vector<vector<double>> image;
 	vector<int> label;
 	printf("read files\n");
-	read_image("t10k-images.idx3-ubyte", image);
-	read_label("t10k-labels.idx1-ubyte", label);
+	read_image("train-images.idx3-ubyte", image);
+	read_label("train-labels.idx1-ubyte", label);
 
-	int maxIter = 30000;
+	int maxIter = 30;
 	double step = 0.02;
 
 	printf("construct neuron network\n");
@@ -97,72 +97,98 @@ int main(int argc, char ** argv){
 	for (int i = 0; i < numLayers; i++)
 	for (int j = 0; j < numNodesPerLayers[i]; j++)
 	for (int k = 0; k < (i == 0 ? numInput : numNodesPerLayers[i - 1]); k++)
-		weights[i][j][k] = 1.0 / (i == 0 ? numInput : numNodesPerLayers[i - 1]);
+		weights[i][j][k] = 0.0001 * (rand() % 201 - 100);
 
 	nl.setWeights((double ***)weights);
 
+	int numImage = (int)image.size() / 6;
 	double * inputs = new double[numInput];
 	double * outputs;
 	vector<int> perm;
-	for (int i = 0; i < (int)image.size(); i++)
+	for (int i = 0; i < numImage; i++)
 		perm.push_back(i);
-
-	//for (int i = 0; i < numInput; i++)
-	//	inputs[i] = image[0][i] / 255;
-	//for (int t = 0; t < 20; t++){
-	//	printf("\n%d-th iteration:\n", t + 1);
-	//	nl.backPropagation(inputs, 5, 0.01);
-	//	outputs = nl.feedForward(inputs);
-	//	printf("\nnew output:\n");
-	//	for (int i = 0; i < numNodesPerLayers[1]; i++)
-	//		printf("%.4f ", outputs[i]);
-	//	printf("\n");
-	//	printf("J = %.4f\n", nl.computeMSE(inputs, 5));
-	//	delete[] outputs;
-	//}
 
 	for (int t = 1; t <= maxIter; t++){
 		double err = 0;
 		printf("Iteration %d : ", t);
 		// random permutation of samples
-		//std::random_shuffle(perm.begin(), perm.end(), myrandom);
+		std::random_shuffle(perm.begin(), perm.end(), myrandom);
 		// train the netword with all random permuted samples
-		for (int n = 0; n < (int)image.size() / 5000; n++){
-			if (n % 500 == 0)
+		for (int n = 0; n < numImage; n++){
+			if (n % (numImage / 20) == 0)
 				printf(">");
 			for (int i = 0; i < numInput; i++)
 				inputs[i] = image[perm[n]][i] / 255;
 			nl.backPropagation(inputs, label[perm[n]], step);
 		}
 
-		for (int n = 0; n < (int)image.size() / 5000; n++)
-			err += nl.computeMSE(inputs, label[n]);
-		printf("total error is %.4f\n", err);
+		//for (int n = 0; n < (int)image.size(); n++)
+		//	err += nl.computeMSE(inputs, label[perm[n]]);
+		//printf("total error is %.4f\n", err);
 
 		// count correct predictions
 		int count = 0;
-		for (int n = 0; n < (int)image.size() / 5000; n++){
+		for (int n = 0; n < numImage; n++){
 			for (int i = 0; i < numInput; i++)
-				inputs[i] = image[n][i] / 255;
+				inputs[i] = image[perm[n]][i] / 255;
 			// do prediction with updated weights
 			outputs = nl.feedForward(inputs);
 			
+			//printf("\nnew output for label %d:\n", label[perm[n]]);
+			//for (int i = 0; i < numNodesPerLayers[1]; i++)
+			//	printf("%.4f ", outputs[i]);
+			//printf("\n");
+
 			// find most probable label
 			int maxIndex = 0;
 			double max = outputs[0];
-			for (int i = 1; i < numNodesPerLayers[i]; i++){
+			for (int i = 1; i < numNodesPerLayers[numLayers-1]; i++){
 				if (outputs[i] > max)
 				{
 					max = outputs[i];
 					maxIndex = i;
 				}
 			}
+			for (int i = 1; i < numNodesPerLayers[numLayers - 1]; i++){
+				double ti = 2 * (double)(label[n] == maxIndex) - 1;
+				err += (outputs[i] - ti) *(outputs[i] - ti);
+			}
 			// if prediction matches true label increment count by 1
-			if (label[n] == maxIndex + 1)
+			if (label[perm[n]] == maxIndex)
 				count++;
 		}
+		printf("\ttotal error is %.4f\n", err);
 		printf("%d predictions are coorect\n", count);
 	}
+
+	for (int i = 0; i < (int)image.size(); i++)
+		vector<double > ().swap(image[i]);
+	vector<vector<double>>().swap(image);
+	vector<int>().swap(label);
+	read_image("t10k-images.idx3-ubyte", image);
+	read_label("t10k-labels.idx1-ubyte", label);
+	int count = 0;
+	for (int n = 0; n < (int)image.size(); n++){
+		for (int i = 0; i < numInput; i++)
+			inputs[i] = image[n][i] / 255;
+		// do prediction
+		outputs = nl.feedForward(inputs);
+
+		// find most probable label
+		int maxIndex = 0;
+		double max = outputs[0];
+		for (int i = 1; i < numNodesPerLayers[numLayers - 1]; i++){
+			if (outputs[i] > max)
+			{
+				max = outputs[i];
+				maxIndex = i;
+			}
+		}
+		// if prediction matches true label increment count by 1
+		if (label[n] == maxIndex)
+			count++;
+	}
+	printf("%d predictions are coorect\n", count);
 
 	delete[] inputs;
 	for (int i = 0; i < numLayers; i++)
