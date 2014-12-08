@@ -44,5 +44,10 @@ public:
 		}
 		return temp;
 	}
+
+	T getWeight(int index)
+	{
+		return weights[index];
+	}
 };
 #endif

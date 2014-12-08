@@ -130,6 +130,11 @@ public:
 		delete[] temp;
 		return J;
 	}
+
+	T getWeight(int layer, int node, int index)
+	{
+		return hiddenLayers[layer]->getWeight(node, index);
+	}
 private:
 	// Compute activation (alpha) and output (beta) for all nodes
 	void computeActivations(T * inputs){
