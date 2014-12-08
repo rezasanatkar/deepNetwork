@@ -49,5 +49,10 @@ public:
 		}
 		return ans;
 	}
+
+	T getWeight(int node, int index)
+	{
+		return nodes[node]->getWeight(index);
+	}
 };
 #endif

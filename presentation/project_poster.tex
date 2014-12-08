@@ -83,7 +83,7 @@ linewidth=2pt % Width of the border lines around content boxes
 \headerbox{Objectives}{name=objectives,column=0,row=0}{
 
 This course project aims at dealing with hand writing recognition task.
-Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years. In this project, we implement a multi-layer neural networks to perform the task of handwritten digits. Our project can be divided in the following main steps: 
+Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years. In this project, we implement a multi-layer neural networks to perform the task of handwritten digits. Our project can be divided in the following main steps:
 
 \begin{itemize}
 \item   Implementation of a general class of multi-layer neural networks in C++.
@@ -173,7 +173,7 @@ The dataset consists of:
 \headerbox{Conclusion}{name=conclusion,column=2,span=2,row=0,below=results, bottomaligned=method}{
 \begin{multicols}{2}
 Neural networks became popular in the community of compute scientists after derivation of back-propagation by Hinton in 1985. However,  many researchers abandoned it because of emergence of SVM in 1990's. SVM worked better than trained neural networks by back-propagation. In 2002, Hinton came up with a fast method to train RBM neural networks which outperformed SVM classifiers. \\
-We need to note that the significant increase in computational power of the computers in the recent years had a key role to make RBM neural networks practical. Training a deep neural networks as a generative classifier needs a huge amount of computations in parallel. Below, you can see the comparison between the RBM neural network and the other methods for handwritten digits recognition of MNIST dataset. the RBM deep neural network works better than other methods. 
+We need to note that the significant increase in computational power of the computers in the recent years had a key role to make RBM neural networks practical. Training a deep neural networks as a generative classifier needs a huge amount of computations in parallel. Below, you can see the comparison between the RBM neural network and the other methods for handwritten digits recognition of MNIST dataset. the RBM deep neural network works better than other methods.
 
 
 %------------------------------------------------
@@ -199,7 +199,7 @@ Back-propagation calculates the gradient of a loss function with respects to all
 The gradient is fed to the optimization method which in turn uses it to update the weights, in an attempt to minimize the loss function.
 \vspace{5pt}
 
-Denote the loss function as $J$, the basic iteration step in gradient descent is given by: 
+Denote the loss function as $J$, the basic iteration step in gradient descent is given by:
 \[ \Delta w = \ell \nabla J, \quad \Delta w_i = \ell \frac{\partial J}{\partial w_i} \]
 %The back-propagation algorithm consists of applying the chain rule to compute these partial derivatives.
 %\vspace{5pt}
@@ -234,7 +234,7 @@ Since we know the $y_i$, once $\hat{y}_i$ is known then $J$ is determined and ba
 \headerbox{Future Research}{name=futureresearch,column=1,span=2,aligned=references, above=bottom}{ % This block is as tall as the references block
 
 %\begin{multicols}{2}
-%All the major technology companies adopted deep neural networks to improve the performance of their products in the recent years. 
+%All the major technology companies adopted deep neural networks to improve the performance of their products in the recent years.
 Even though employing multi-layer neural networks have improved the accuracy of object detection systems, the success rate of such systems is about 50 percent. This gives rise to the idea of a new class of neural networks with more similar structure to brain.
 %\end{multicols}
 }
