@@ -1,6 +1,7 @@
 \documentclass{article} % For LaTeX2e
 \usepackage{final_project,times}
 \usepackage{graphicx}
+\usepackage{epstopdf}
 \usepackage[font=small,labelfont=bf]{caption}
 \usepackage[]{algorithm2e}
 %\documentstyle[nips12submit_09,times,art10]{article} % For LaTeX 2.09
@@ -31,7 +32,7 @@ This course project aims at dealing with hand writing recognition task.
 Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years.
 In this project, we implement a multi-layer neural networks to perform the task of handwritten digits.
 Both neuron network with back propagation (BP) and deep belief network with restricted Boltzmann machine (RBM) are trained in MNIST database.
-For BP, the error rate on test set is 3.7\%, while for RBM the error rate is XXX.
+For BP, the error rate on test set is $3.75\%$, while for RBM the error rate is XXX.
 \end{abstract}
 
 \section{Introduction}
@@ -106,16 +107,59 @@ A single presentation of the entire training set is called an epoch. The amount 
     }
 \end{algorithm}
 \section{Restrict Boltzmann Machine}
+Multi-layer neural networks represent the consistent effort of human beings to mimic the brain. Below, you see the neural networks which is used in this project. This network consists of three hidden layers.
+\begin{center}
+\includegraphics[width=0.6\linewidth]{DNN.png}
+\captionof{figure}{Neural Network implemented as a classifier of handwritten digits [1]}
+\end{center}
+Deep belief networks outperform the traditional neural networks  because of taking benefits from RBMs. 
+What is a RBM? 
+RBM is a bipartite undirected inference graph which is used to learn a multivariate joint distribution satisfying the conditional independence imposed by the bipartite structure of the graph. 
+In deep neural networks, every pair of successive layers is considered as a RBM. 
+The first and most important step of training a deep neural network is to train these RBMs.
+
+First, we train the RBM corresponding to the input layer and the first hidden layer. 
+After learning the generative model for the first RBM, we use this set of learned weights to generate inputs for the second RBM. 
+Having inputs for the second RBM, the set of weights of edges entering the nodes in the second hidden layer are learnt. 
+These steps are repeated for all the other RBMS too.
+
+How to learn a RBM in a reasonable time : Contrastive Divergence Learning Procedure\\
+\[ \Delta w_{ij} = \epsilon (<v_{i}h_{j}>^{0} - <v_{i}h_{j}^{1}) \]
+\begin{itemize}
+\item Start with available data on the visible units
+\item Compute the hidden nodes in parallel
+\item Compute the visible units (Reconstruction)
+\item Update the hidden nodes again
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=0.6\linewidth]{CDLP.png}
+\captionof{figure}{Contrastive Divergence Learning[1] }
+\end{center}
 
 \section{Result}
 For back propagation method, our model is constructed as following: the first layer is the input, which contains $28 \times 28 = 768$ nodes; the second layer is a hidden layer with $300$ hidden nodes; the last layer is the output layer which has $10$ nodes corresponding ten digits respectively.
+
+\begin{center}
+\includegraphics[width=0.3\linewidth]{NN_BP.jpg}
+\captionof{figure}{neuron network trained by back propagation used for handwritten digits classification}
+\end{center}
+
 Also, we chose the learning rate $ \ell = 0.02 $ and maximum iteration number $ T = 100 $.
-Under such setup, the error rate on training set is $XXX$ after $100$ iteration, while the error rate on testing set if $XXX$.
+Under such setup, the error rate on training set is $0.74\%$ after $100$ iteration, while the error rate on testing set if $3.75\%$.
+The figure below show the trend of error rate changing with the epoches.
+
+\begin{center}
+\includegraphics[width=0.6\linewidth]{bp_simul.eps}
+\captionof{figure}{error rate vs. epoch on both training set and testing set}
+\label{fig:bp_result}
+\end{center}
 
 \section{Conclusion}
 For back propagation, each update is guaranteed to lower the individual MSE for the pattern, but it could increase the total error. 
 But in the long run, the total error decreases.
 However, training a neuron network with a too large epoch number can be dangerous since this may cause overfitting.
+This phenomenon can be seen from Figure ~\ref{fig:bp_result}, the error rate on training set is decreasing in the long run, but the error rate on testing set stops decreasing after about $40$ epoches.
 
 \nocite{*} % Insert publications even if they are not cited in the poster
 \small{ % Reduce the font size in this block
