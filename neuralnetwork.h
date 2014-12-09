@@ -47,6 +47,8 @@ public:
 
 		// Build delta array to store sensitivity
 		delta = new R*[numLayers];
+
+
 		for (int i = 0; i < numLayers; i++)
 			delta[i] = new R[numNodesPerLayers[i]];
 
@@ -93,6 +95,13 @@ public:
 		for (int k = 0; k < (i == 0 ? numInputs : numNodesPerLayers[i - 1]); k++)
 			tempWeights[i][j][k] = weights[i][j][k];
 	}
+	void setWeights(){
+	  for(int i = 0; i < numInputs; i++){
+	    for(int j = 0; j < numNodesPerLayers[0]; j++){
+	      tempWeights[0][j][i] = hiddenLayers[0]->nodes[j]->weights[i];
+	    }
+	  } 
+	}
 
 	// Feed-forward algorithm to compute the output of network
 	R * feedForward(T * inputs){
@@ -106,7 +115,42 @@ public:
 		}
 		return tempInput;
 	}
+	R * feedForwardRBM(T * inputs, const int numLayer){
+	  //R * tempInput = inputs;
+	  //R * tempOutput;
+	  //for (int i = 0; i < numLayer; i++){
+	  //  tempOutput = hiddenLayers[i]->computeOutputs(tempInput);
+	  //  if(i > 0)
+	  //    delete[] tempInput;
+	  //  tempInput = tempOutput;
+	  //}
+	  return inputs;
+	}
+	void trainRBM(T * visible_0, const int layerNumber, hiddenLayer<R,T> * tempHiddenLayer, T ** weightsRBM,  const R epsilon){
+	  R * hidden_0 = hiddenLayers[layerNumber]->computeOutputs(visible_0);
+	  tempHiddenLayer->setWeights(weightsRBM);
+	  R * visible_1 = tempHiddenLayer->computeOutputs(hidden_0);
+	  R * hidden_1 = hiddenLayers[layerNumber]->computeOutputs(visible_1);
+	  for(int i = 0; i < numInputs; i++){
+	    for(int j = 0; j < numNodesPerLayers[layerNumber]; j++){
+	      weightsRBM[i][j] = weightsRBM[i][j] + (visible_0[i] * hidden_0[j] - visible_1[i] * hidden_1[j]) * epsilon;
+	      hiddenLayers[layerNumber]->nodes[j]->weights[i] = weightsRBM[i][j];
+	    }
+	  }
+	  delete[] hidden_0;
+	  delete[] visible_1;
+	  delete[] hidden_1;
+	}
+	// Contrastive Divergence to train RBM
+	void RBM(T * inputs, const int layerNumber, hiddenLayer<R, T>* tempHiddenLayer, T ** weightsRBM, const R epsilon){
+	  // LayerNumber deontes the layer whose RBM will be trained
+	  // epsilon is the learning rate of the contrastive divergence method
+	  // inputs denote the input values of the neural network and not the inputs for which layer we want to train its RBM
+	  R * visible_0 = feedForwardRBM(inputs, layerNumber);
+	  trainRBM(visible_0, layerNumber, tempHiddenLayer, weightsRBM, epsilon);
+	  //delete[] visible_0;
 
+	}
 	// Back-propagation algorithm to update weights
 	void backPropagation(T * inputs, const int label, const R epsilon){
 		// compute all activations and outputs

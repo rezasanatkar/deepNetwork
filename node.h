@@ -2,10 +2,11 @@
 template <typename R, typename T>
 class node{
 	int numInputs;						// number of adjacent nodes from previous layer
-	T * weights;						// weights of corresponding adjacent nodes from previous layer
+	//T * weights;						// weights of corresponding adjacent nodes from previous layer
 	T activation;						// activation of the nodes
 	function<R, T> * transferFunction;	// transfer function between activation and output
 public:
+	T * weights;
 	// Constructor
 	node(int _numInputs, function<R, T> * _transferFunction) : numInputs(_numInputs), transferFunction(_transferFunction){
 		weights = new T[numInputs];

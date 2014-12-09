@@ -4,9 +4,10 @@ template <typename R, typename T>
 class hiddenLayer{
 	int numInputs;						// number of input value, i.e. number of nodes in previous layer
 	int numNodes;						// number of nodes in this layer
-	node<R, T> ** nodes;				// array of nodes
+	//node<R, T> ** nodes;				// array of nodes
 	function<R, T> * transferFunction;	// transfer function between activation and output of all nodes
 public:
+	node<R, T> ** nodes;
 	// Constructor
 	hiddenLayer(int _numInputs, int _numNodes, function<R, T> * _transferFunction) : numInputs(_numInputs), numNodes(_numNodes), transferFunction(_transferFunction){
 		nodes = new node<R, T>*[numNodes];

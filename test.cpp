@@ -6,21 +6,6 @@
 #include <algorithm> 
 #include <ctime> 
 
-//class tanhFunction : public function<double, double>{
-//public:
-//	virtual double invoke(double arg) const{
-		//return tanh(arg);
-//		return 1.0 / (1.0 + exp(-arg));
-//	}
-//};
-
-//class tanhFunctionD : public function<double, double>{
-//public:
-//	virtual double invoke(double arg) const{
-		//return 1 - tanh(arg) * tanh(arg);
-//		return exp(arg) / (pow(exp(arg) + 1, 2));
-//	}
-//};
 
 int myrandom(int i) { return std::rand() % i; }
 
@@ -47,7 +32,7 @@ int main(int argc, char ** argv){
 	double step = 0.02;
 
 	// construct the network
-	printf("construct neuron network\n");
+	printf("construct neural network\n");
 	int numInput = train_image[0].size();
 	int numLayers = 2;
 	int numNodesPerLayers[2] = { 300, 10 };
@@ -70,16 +55,9 @@ int main(int argc, char ** argv){
 
 	nl.setWeights((double ***)weights);
 
-	// releease memory for weights
-	for (int i = 0; i < numLayers; i++)
-	for (int j = 0; j < numNodesPerLayers[i]; j++)
-		delete[] weights[i][j];
-	for (int i = 0; i < numLayers; i++)
-		delete[] weights[i];
-	delete[] weights;
 
 	// construct permutation array
-	int numImage = (int)train_image.size();
+	int numImage = (int)train_image.size();// / 100;
 	vector<int> perm;
 	for (int i = 0; i < numImage; i++)
 		perm.push_back(i);
@@ -92,6 +70,7 @@ int main(int argc, char ** argv){
 			train_input[i][j] = train_image[i][j] / 255;
 	}
 
+
 	// assign inputs from testing images
 	double ** test_input = new double*[test_image.size()];
 	for (int i = 0; i < (int)test_image.size(); i++){
@@ -99,18 +78,55 @@ int main(int argc, char ** argv){
 		for (int j = 0; j < (int)test_image[i].size(); j++)
 			test_input[i][j] = test_image[i][j] / 255;
 	}
+	double ** weightsRBM = new double*[numInput];
+	for(int i = 0; i < numInput; i++){
+	  weightsRBM[i] = new double[numNodesPerLayers[0]];
+	}
+	for(int i = 0; i < numInput; i++){
+	  for(int j = 0; j < numNodesPerLayers[0]; j++){
+	    weightsRBM[i][j] = weights[0][j][i];
+	  } 
+	}
+	int RBMapply = 1;
+	if(RBMapply == 1){
+	  hiddenLayer<double, double> * tempHiddenLayer = new hiddenLayer<double, double>(numNodesPerLayers[0], numInput, new tanhFunction); 
+	  double epsilon = 0.02;
+	  int t1 = 0;
+	  for (int n = 0; n < numImage; n++){
+	    if((n * 100) / numImage >= t1 + 1){
+	    printf("%d%%\n", (n * 100) / numImage);
+	    t1 = (n * 100) / numImage;
+	    }
+	    nl.RBM(train_input[n], 0, tempHiddenLayer, weightsRBM, epsilon);
+	  }
+	  nl.setWeights();
+	}
 
+
+
+
+	// releease memory for weights
+	for (int i = 0; i < numLayers; i++)
+	for (int j = 0; j < numNodesPerLayers[i]; j++)
+		delete[] weights[i][j];
+	for (int i = 0; i < numLayers; i++)
+		delete[] weights[i];
+	delete[] weights;
+	
 	double * train_err = new double[maxIter];
 	double * test_err = new double[maxIter];
+
 	for (int t = 1; t <= maxIter; t++){
 		double err = 0;
-		printf("Iteration %d : ", t);
+
+		printf("Iteration %d : \n", t);
+
 		// random permutation of samples
 		std::random_shuffle(perm.begin(), perm.end(), myrandom);
 		// train the netword with all random permuted samples
 		for (int n = 0; n < numImage; n++){
 			if (n % (numImage / 20) == 0)
-				printf(">");
+				printf(">\n");
 			nl.backPropagation(train_input[perm[n]], train_label[perm[n]], step);
 		}
 

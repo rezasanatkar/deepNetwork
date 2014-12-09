@@ -31,14 +31,15 @@ Mohammed Reza Sanatkar \\
 This course project aims at dealing with hand writing recognition task.
 Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years.
 In this project, we implement a multi-layer neural networks to perform the task of handwritten digits.
-Both neuron network with back propagation (BP) and deep belief network with restricted Boltzmann machine (RBM) are trained in MNIST database.
-For BP, the error rate on test set is $3.75\%$, while for RBM the error rate is XXX.
+Two different methods are employed to train a three layer neural networks. The first used method is the standard back propagation (BP) algorithm. The second method is the combination of the conventional back propagation and restricted Boltzmann machine (RBM).  
+For BP, the generalization error is $3.75\%$, while for the second method which is the combined of BP and RBM, the generalization error is $3.0\%$. 
 \end{abstract}
 
 \section{Introduction}
 
 This course project aims at dealing with hand writing recognition task.
-Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years. In this project, we implement a multi-layer neural networks to perform the task of handwritten digits. Our project can be divided in the following main steps:
+Deep neural networks have garnered a lot of attention in the field of machine learning in the recent years. In this project, we implement a multi-layer neural networks to perform the task of handwritten digits. The standard method to train neural networks is back propagation. The goal of Training neural networks is to choose the value of weights in order to minimize generalization errors. Back propagation is the gradient descent method derived to find the weights of neural networks. The gradient descent method eventually will find the optimum point of the cost function if the cost function is a convex function of decision variables. However, the cost function of neural networks is not a convex function of the weights. So, back propagation stops at a local optimum. The performance of back propagation and in general any gradient descent method applied to non-convex problem mainly depend on the initial guesses in the parameter space. In other words, the generalization error of back propagation decreases if the initial values for the weights are chosen in a smart systematic way. This can be done via restricted Boltzmann machine. By training the restricted Boltzmann machine corresponding to every layer of the neural network, we learn the joint distribution of hidden and visible variables. It provides us with good initial guesses for the values of weights, which are used as in the back-propagation. The second method which benefits from both RBM and BP outperforms the first method which is merely based on back propagation. 
+ Our project can be divided in the following main steps:
 
 \begin{itemize}
 \item   Implementation of a general class of multi-layer neural networks in C++.
@@ -107,24 +108,23 @@ A single presentation of the entire training set is called an epoch. The amount 
     }
 \end{algorithm}
 \section{Restrict Boltzmann Machine}
-Multi-layer neural networks represent the consistent effort of human beings to mimic the brain. Below, you see the neural networks which is used in this project. This network consists of three hidden layers.
-\begin{center}
-\includegraphics[width=0.6\linewidth]{DNN.png}
-\captionof{figure}{Neural Network implemented as a classifier of handwritten digits [1]}
-\end{center}
+Multi-layer neural networks represent the consistent effort of human beings to mimic the brain. 
+%Below, you see the neural networks which is used in this project. This network consists of three hidden layers.
+%\begin{center}
+%\includegraphics[width=0.6\linewidth]{DNN.png}
+%\captionof{figure}{Neural Network implemented as a classifier of handwritten digits [1]}
+%\end{center}
 Deep belief networks outperform the traditional neural networks  because of taking benefits from RBMs. 
 What is a RBM? 
 RBM is a bipartite undirected inference graph which is used to learn a multivariate joint distribution satisfying the conditional independence imposed by the bipartite structure of the graph. 
 In deep neural networks, every pair of successive layers is considered as a RBM. 
 The first and most important step of training a deep neural network is to train these RBMs.
-
 First, we train the RBM corresponding to the input layer and the first hidden layer. 
 After learning the generative model for the first RBM, we use this set of learned weights to generate inputs for the second RBM. 
 Having inputs for the second RBM, the set of weights of edges entering the nodes in the second hidden layer are learnt. 
-These steps are repeated for all the other RBMS too.
-
-How to learn a RBM in a reasonable time : Contrastive Divergence Learning Procedure\\
-\[ \Delta w_{ij} = \epsilon (<v_{i}h_{j}>^{0} - <v_{i}h_{j}^{1}) \]
+These steps are repeated for all the other RBMS too.\\
+\indent Contrastive divergence learning procedure is the method to train RBMs in a reasonable time. 
+\[ \Delta w_{ij} = \epsilon (<v_{i}h_{j}>^{0} - <v_{i}h_{j}>^{1}) \]
 \begin{itemize}
 \item Start with available data on the visible units
 \item Compute the hidden nodes in parallel
@@ -138,28 +138,25 @@ How to learn a RBM in a reasonable time : Contrastive Divergence Learning Proced
 \end{center}
 
 \section{Result}
-For back propagation method, our model is constructed as following: the first layer is the input, which contains $28 \times 28 = 768$ nodes; the second layer is a hidden layer with $300$ hidden nodes; the last layer is the output layer which has $10$ nodes corresponding ten digits respectively.
+The neural network is constructed as following: the input layer contains $28 \times 28 = 768$ nodes. the second layer consists of $300$ hidden nodes. And, the last layer is the output layer which has $10$ nodes corresponding to ten digits, respectively.
 
 \begin{center}
 \includegraphics[width=0.3\linewidth]{NN_BP.jpg}
 \captionof{figure}{neuron network trained by back propagation used for handwritten digits classification}
 \end{center}
 
-Also, we chose the learning rate $ \ell = 0.02 $ and maximum iteration number $ T = 100 $.
-Under such setup, the error rate on training set is $0.74\%$ after $100$ iteration, while the error rate on testing set if $3.75\%$.
-The figure below show the trend of error rate changing with the epoches.
+Also, we chose the learning rate to $ \ell = 0.02 $ for both learning methods. Maximum iteration number $ T = 100 $.
+Under such setup, the error rate on training set is $0.74\%$ for BP and $0.48\%$ for RBM + BP after $100$ iteration.  The generalization error is  $3.75\%$ for BP and $3.0\%$ for RBM + BP.
+Figure \ref{fig:bp_result} shows the training and generalization errors for both methods per iteration. We see that the initialization of weights using RBM decreases both the generalization and training errors.
 
 \begin{center}
-\includegraphics[width=0.6\linewidth]{bp_simul.eps}
-\captionof{figure}{error rate vs. epoch on both training set and testing set}
+\includegraphics[width=1\linewidth]{bp_simul.eps}
+\captionof{figure}{Error rates vs. epoch for BP and RBM + BP methods.}
 \label{fig:bp_result}
 \end{center}
 
 \section{Conclusion}
-For back propagation, each update is guaranteed to lower the individual MSE for the pattern, but it could increase the total error. 
-But in the long run, the total error decreases.
-However, training a neuron network with a too large epoch number can be dangerous since this may cause overfitting.
-This phenomenon can be seen from Figure ~\ref{fig:bp_result}, the error rate on training set is decreasing in the long run, but the error rate on testing set stops decreasing after about $40$ epoches.
+For both methods, each update is guaranteed to lower the training error. However, it is not the case for the generalization error and we observe overfitting for both BP and RBM + BP methods, which can be seen in  Figure \ref{fig:bp_result}. In conclusion, the training method which combines the RBM and the back propagation outperforms the training method which only uses the back propagation. It is because the RBM + BP method is a generative classifier whereas the BP method is a discriminative classifier. In the RBM + BP, by training restricted Boltzmann machine which is an unsupervised learning, the joint distribution of visible and hidden nodes are learned. This provides the RBM + BP with much more information compared to the BP method about the data. This extra information causes the RBM + BP method to have both lower training and generalization errors than the BP method.  
 
 \nocite{*} % Insert publications even if they are not cited in the poster
 \small{ % Reduce the font size in this block
