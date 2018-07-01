@@ -1,8 +1,1 @@
-deepNetwork
-===========
-1234
-
-12345
-
-kjsdfhjksdhf
-123454321
+This is a library of C++ implementation for feedforward neural networks.
